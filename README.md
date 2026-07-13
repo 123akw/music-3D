@@ -23,12 +23,6 @@ npm run build:mac
 
 `npm run build:mac:dir` 会生成可直接检查的 `dist/mac-arm64/Mineradio.app` 或对应架构目录；`npm run build:mac` 会生成 `Mineradio-1.1.1-mac-arm64.dmg` / `.zip` 和 `x64` 产物。未签名构建首次打开时可能触发 macOS 安全提示，可在 Finder 中右键选择“打开”进行本地测试。
 
-## 支持项目
-
-如果 music-3D 陪你多听了一首歌，也欢迎支持继续维护。
-
-[查看支持方式](./docs/SUPPORT.md)
-
 ## 下载或安装被拦截怎么办
 
 小众 Electron 桌面软件、未签名安装包有时会被浏览器、Windows Defender 或 SmartScreen 提示风险。请先确认安装包来自上面的 GitHub Release 官方入口，文件名是 `Mineradio-1.1.1-Setup.exe`。
