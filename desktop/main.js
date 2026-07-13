@@ -1202,7 +1202,7 @@ ipcMain.handle('qq-music-clear-login', async () => {
 ipcMain.handle('mineradio-open-update-installer', async (_event, filePath) => {
   try {
     if (process.platform === 'darwin') {
-      shell.openExternal('https://github.com/XxHuberrr/Mineradio/releases').catch(() => {});
+      shell.openExternal('https://github.com/123akw/music-3D/releases').catch(() => {});
       return { ok: false, platform: 'darwin', error: 'MAC_UPDATE_INSTALLER_UNSUPPORTED' };
     }
     const target = path.resolve(String(filePath || ''));

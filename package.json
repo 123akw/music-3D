@@ -89,16 +89,16 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "XxHuberrr",
-        "repo": "Mineradio"
+        "owner": "123akw",
+        "repo": "music-3D"
       }
     ]
   },
   "mineradio": {
     "update": {
       "provider": "github",
-      "owner": "XxHuberrr",
-      "repo": "Mineradio",
+      "owner": "123akw",
+      "repo": "music-3D",
       "preview": true,
       "preferMirrors": true,
       "mirrors": [
