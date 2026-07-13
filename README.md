@@ -1,3 +1,10 @@
+# music-3D
+
+> 🛠️ **二次开发说明**：本仓库（[123akw/music-3D](https://github.com/123akw/music-3D)）基于开源项目 [XxHuberrr/Mineradio](https://github.com/XxHuberrr/Mineradio) 进行二次开发。
+> 上游仓库已配置为 `upstream` 远程，可通过 `git fetch upstream` 同步原项目更新。以下为原项目文档内容。
+
+---
+
 # Mineradio
 
 ![Mineradio 暗场启动页](./docs/assets/readme/cinema-beat-smoke.png)
