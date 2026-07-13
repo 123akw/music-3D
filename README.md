@@ -23,13 +23,19 @@ npm run build:mac
 
 `npm run build:mac:dir` 会生成可直接检查的 `dist/mac-arm64/Mineradio.app` 或对应架构目录；`npm run build:mac` 会生成 `Mineradio-1.1.1-mac-arm64.dmg` / `.zip` 和 `x64` 产物。未签名构建首次打开时可能触发 macOS 安全提示，可在 Finder 中右键选择“打开”进行本地测试。
 
+## 支持项目
+
+如果 music-3D 陪你多听了一首歌，也欢迎支持继续维护。
+
+[查看支持方式](./docs/SUPPORT.md)
+
 ## 下载或安装被拦截怎么办
 
-小众 Electron 桌面软件、未签名安装包有时会被浏览器、Windows Defender 或 SmartScreen 提示风险。请先确认安装包来自上面的蓝奏云或 GitHub Release 官方入口，文件名是 `Mineradio-1.1.1-Setup.exe`。
+小众 Electron 桌面软件、未签名安装包有时会被浏览器、Windows Defender 或 SmartScreen 提示风险。请先确认安装包来自上面的 GitHub Release 官方入口，文件名是 `Mineradio-1.1.1-Setup.exe`。
 
 1. 浏览器下载栏提示风险时，打开下载列表，点这条下载右侧的 `...` 三个点，选择 `保留` / `仍要保留` / `显示更多` 后继续保留。
 2. Windows SmartScreen 弹出蓝色拦截窗口时，点 `更多信息`，再点 `仍要运行`。
-3. 如果杀毒软件明确显示木马、高危或已经隔离，不要强行运行；删除该文件后重新从蓝奏云或 GitHub Release 下载，仍然异常请带截图反馈给作者。
+3. 如果杀毒软件明确显示木马、高危或已经隔离，不要强行运行；删除该文件后重新从 GitHub Release 下载，仍然异常请带截图反馈。
 
 1.1.1 的核心目标是把 Mineradio 重新整理成一份可公开下载的纯净安装版：默认视觉参数来自内置「默认测试」用户存档，首次启动就进入统一的视觉手感；3D 歌单架、歌词层级、用户存档和后台性能策略都在同一轮里收口。
 
