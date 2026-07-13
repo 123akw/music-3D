@@ -50,6 +50,7 @@ const fs   = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const tls = require('tls');
+const os = require('os');
 const { once } = require('events');
 const { fileURLToPath } = require('url');
 const { analyzePodcastDjStream, analyzePodcastDjIntro } = require('./dj-analyzer');
@@ -62,7 +63,10 @@ const QQ_COOKIE_FILE = process.env.QQ_COOKIE_FILE || path.join(__dirname, '.qq-c
 const UPDATE_WORK_DIR = process.env.MINERADIO_UPDATE_DIR || path.join(__dirname, 'updates');
 const UPDATE_DOWNLOAD_DIR = process.env.MINERADIO_UPDATE_DOWNLOAD_DIR || path.join(UPDATE_WORK_DIR, 'downloads');
 const UPDATE_PATCH_BACKUP_DIR = process.env.MINERADIO_PATCH_BACKUP_DIR || path.join(UPDATE_WORK_DIR, 'backups', 'patches');
-const BEATMAP_CACHE_DIR = process.env.MINERADIO_BEAT_CACHE_DIR || 'D:\\MineradioCache\\beatmaps';
+const DEFAULT_BEATMAP_CACHE_DIR = process.platform === 'win32'
+  ? 'D:\\MineradioCache\\beatmaps'
+  : path.join(os.homedir(), 'Library', 'Caches', 'Mineradio', 'beatmaps');
+const BEATMAP_CACHE_DIR = process.env.MINERADIO_BEAT_CACHE_DIR || DEFAULT_BEATMAP_CACHE_DIR;
 const APP_PACKAGE = readPackageInfo();
 const APP_VERSION = process.env.MINERADIO_VERSION || APP_PACKAGE.version || '0.9.11';
 const UPDATE_CONFIG = readUpdateConfig(APP_PACKAGE);
@@ -118,6 +122,13 @@ const MIME = {
   '.ico':  'image/x-icon',
   '.svg':  'image/svg+xml',
 };
+
+function firstExistingPath(paths) {
+  return (paths || []).find(filePath => {
+    try { return filePath && fs.existsSync(filePath); }
+    catch (e) { return false; }
+  }) || '';
+}
 
 // ---------- Cookie 持久化 ----------
 const COOKIE_ATTRIBUTE_NAMES = new Set(['path', 'domain', 'expires', 'max-age', 'samesite', 'secure', 'httponly']);
@@ -1439,6 +1450,10 @@ function qqCookiePlaybackKey(obj) {
   obj = obj || qqCookieObject();
   return obj.qm_keyst || obj.qqmusic_key || obj.music_key || obj.wxskey || '';
 }
+function qqPlaybackSessionReady(obj) {
+  obj = obj || qqCookieObject();
+  return !!(qqCookieUin(obj) && qqCookiePlaybackKey(obj));
+}
 function decodeQQCookieValue(value) {
   try { return decodeURIComponent(String(value || '').replace(/\+/g, '%20')).trim(); }
   catch (e) { return String(value || '').trim(); }
@@ -2403,7 +2418,7 @@ function mapQQPlaylistTrack(raw) {
     cover: qqAlbumCover(albumMid, 300),
     duration: (Number(track.interval || raw.interval) || 0) * 1000,
     fee: track.pay && Number(track.pay.pay_play) ? 1 : 0,
-    playable: false,
+    playable: qqPlaybackSessionReady(),
   };
 }
 
@@ -2518,7 +2533,7 @@ function mapQQSmartSong(item) {
     cover: '',
     duration: 0,
     fee: 0,
-    playable: false,
+    playable: qqPlaybackSessionReady(),
   };
 }
 
@@ -2548,7 +2563,7 @@ function mapQQTrack(track, fallback) {
     cover: qqAlbumCover(albumMid, 300) || fallback.cover || '',
     duration: (Number(track.interval) || 0) * 1000,
     fee: track.pay && Number(track.pay.pay_play) ? 1 : 0,
-    playable: false,
+    playable: qqPlaybackSessionReady(),
   };
 }
 
@@ -2674,9 +2689,18 @@ async function handleQQSongUrl(mid, mediaMid, qualityPreference) {
     uin,
     loginflag: 1,
     platform: '20',
+    appid: '1600007370',
+    cid: '205361747',
   };
   if (filenames.length) param.filename = filenames;
-  const comm = { uin, format: 'json', ct: musicKey ? 19 : 24, cv: 0 };
+  const comm = {
+    uin,
+    format: 'json',
+    ct: musicKey ? 19 : 24,
+    cv: 0,
+    platform: 'yqq.json',
+    needNewCode: 1,
+  };
   if (musicKey) comm.authst = musicKey;
   const json = await qqMusicRequest({
     comm,
@@ -2698,6 +2722,9 @@ async function handleQQSongUrl(mid, mediaMid, qualityPreference) {
       url: sip + purl,
       trial: false,
       playable: true,
+      loggedIn: !!(uin && musicKey),
+      playbackKeyReady: !!(uin && playbackKey),
+      authMode: playbackKey ? 'playback' : (musicKey ? 'account' : 'none'),
       level: fileMeta.level || info.filename || '',
       quality: fileMeta.label || info.filename || '',
       filename: info.filename || '',
@@ -4155,7 +4182,11 @@ const server = http.createServer(async (req, res) => {
       const reader = resp.body.getReader();
       while (true) { const c = await reader.read(); if (c.done) break; res.write(c.value); }
       res.end();
-    } catch (err) { console.error('[Cover]', err); res.writeHead(500); res.end(); }
+    } catch (err) {
+      console.error('[Cover]', err);
+      if (!res.headersSent) res.writeHead(500);
+      if (!res.writableEnded) res.end();
+    }
     return;
   }
 
@@ -4178,13 +4209,20 @@ const server = http.createServer(async (req, res) => {
       const reader = up.body.getReader();
       while (true) { const c = await reader.read(); if (c.done) break; res.write(c.value); }
       res.end();
-    } catch (err) { console.error('[Audio]', err); res.writeHead(500); res.end(); }
+    } catch (err) {
+      console.error('[Audio]', err);
+      if (!res.headersSent) res.writeHead(500);
+      if (!res.writableEnded) res.end();
+    }
     return;
   }
 
   // ---------- 静态资源 ----------
   if (pn === '/favicon.ico') {
-    serveStatic(res, path.join(__dirname, 'build', 'icon.ico'));
+    serveStatic(res, firstExistingPath([
+      path.join(__dirname, 'build', 'icon.ico'),
+      path.join(__dirname, 'build', 'icon.png'),
+    ]) || path.join(__dirname, 'build', 'icon.ico'));
     return;
   }
 

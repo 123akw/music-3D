@@ -32,10 +32,13 @@ const MIN_WINDOWED_HEIGHT = 540;
 const APP_NAME = 'Mineradio';
 const APP_USER_MODEL_ID = 'com.mineradio.desktop';
 const APP_ICON_ICO = path.join(__dirname, '..', 'build', 'icon.ico');
+const APP_ICON_PNG = path.join(__dirname, '..', 'build', 'icon.png');
+const APP_ICON = process.platform === 'darwin' ? APP_ICON_PNG : APP_ICON_ICO;
 const NETEASE_LOGIN_PARTITION = 'persist:mineradio-netease-login';
 const NETEASE_LOGIN_URL = 'https://music.163.com/#/login';
 const QQ_LOGIN_PARTITION = 'persist:mineradio-qqmusic-login';
 const QQ_LOGIN_URL = 'https://y.qq.com/n/ryqq/profile';
+const IS_MAC = process.platform === 'darwin';
 
 const CHROMIUM_PERFORMANCE_SWITCHES = [
   ['autoplay-policy', 'no-user-gesture-required'],
@@ -48,8 +51,8 @@ const CHROMIUM_PERFORMANCE_SWITCHES = [
   ['disable-renderer-backgrounding'],
   ['disable-backgrounding-occluded-windows'],
   ['force_high_performance_gpu'],
-  ['use-angle', 'd3d11'],
 ];
+if (process.platform === 'win32') CHROMIUM_PERFORMANCE_SWITCHES.push(['use-angle', 'd3d11']);
 for (const [name, value] of CHROMIUM_PERFORMANCE_SWITCHES) {
   if (value == null) app.commandLine.appendSwitch(name);
   else app.commandLine.appendSwitch(name, value);
@@ -351,7 +354,10 @@ function neteaseCookieHasLogin(cookieText) {
 
 function isQQCookieDomain(domain) {
   const normalized = String(domain || '').replace(/^\./, '').toLowerCase();
-  return normalized === 'qq.com' || normalized.endsWith('.qq.com') || normalized.endsWith('qqmusic.qq.com');
+  return normalized === 'qq.com' || normalized.endsWith('.qq.com') ||
+    normalized === 'qqmusic.qq.com' || normalized.endsWith('.qqmusic.qq.com') ||
+    normalized === 'y.qq.com' || normalized === 'c.y.qq.com' ||
+    normalized === 'ptlogin2.qq.com' || normalized.endsWith('.ptlogin2.qq.com');
 }
 
 function isNeteaseCookieDomain(domain) {
@@ -407,17 +413,23 @@ async function openNeteaseMusicLoginWindow(owner) {
     let pollTimer = null;
 
     const loginWindow = new BrowserWindow({
-      width: 940,
-      height: 760,
-      minWidth: 780,
-      minHeight: 580,
+      width: IS_MAC ? 880 : 940,
+      height: IS_MAC ? 720 : 760,
+      minWidth: IS_MAC ? 640 : 780,
+      minHeight: IS_MAC ? 520 : 580,
       parent: owner && !owner.isDestroyed() ? owner : undefined,
       modal: false,
       show: false,
       autoHideMenuBar: true,
       title: '网易云音乐登录',
       backgroundColor: '#111111',
-      icon: APP_ICON_ICO,
+      icon: APP_ICON,
+      ...(IS_MAC ? {
+        titleBarStyle: 'hiddenInset',
+        trafficLightPosition: { x: 18, y: 16 },
+        vibrancy: 'under-window',
+        visualEffectState: 'active',
+      } : {}),
       webPreferences: {
         partition: NETEASE_LOGIN_PARTITION,
         contextIsolation: true,
@@ -486,7 +498,7 @@ async function openNeteaseMusicLoginWindow(owner) {
       try {
         const cookie = await readNeteaseLoginCookieHeader(cookieSession);
         resolve(neteaseCookieHasLogin(cookie)
-          ? { ok: true, cookie, partial: !qqCookieHasPlaybackLogin(cookie) }
+          ? { ok: true, cookie }
           : { ok: false, cancelled: true, message: '网易云登录窗口已关闭' });
       } catch (e) {
         resolve({ ok: false, error: e.message || '网易云登录窗口已关闭' });
@@ -509,17 +521,23 @@ async function openQQMusicLoginWindow(owner) {
     let warmupStarted = false;
 
     const loginWindow = new BrowserWindow({
-      width: 900,
-      height: 720,
-      minWidth: 760,
-      minHeight: 560,
+      width: IS_MAC ? 880 : 900,
+      height: IS_MAC ? 720 : 720,
+      minWidth: IS_MAC ? 640 : 760,
+      minHeight: IS_MAC ? 520 : 560,
       parent: owner && !owner.isDestroyed() ? owner : undefined,
       modal: false,
       show: false,
       autoHideMenuBar: true,
       title: 'QQ 音乐登录',
       backgroundColor: '#111111',
-      icon: APP_ICON_ICO,
+      icon: APP_ICON,
+      ...(IS_MAC ? {
+        titleBarStyle: 'hiddenInset',
+        trafficLightPosition: { x: 18, y: 16 },
+        vibrancy: 'under-window',
+        visualEffectState: 'active',
+      } : {}),
       webPreferences: {
         partition: QQ_LOGIN_PARTITION,
         contextIsolation: true,
@@ -588,7 +606,7 @@ async function openQQMusicLoginWindow(owner) {
       try {
         const cookie = await readQQLoginCookieHeader(cookieSession);
         resolve(qqCookieHasLogin(cookie)
-          ? { ok: true, cookie }
+          ? { ok: true, cookie, partial: !qqCookieHasPlaybackLogin(cookie) }
           : { ok: false, cancelled: true, message: 'QQ 登录窗口已关闭' });
       } catch (e) {
         resolve({ ok: false, error: e.message || 'QQ 登录窗口已关闭' });
@@ -1040,6 +1058,11 @@ function sendWallpaperState() {
 }
 
 function createWallpaperWindow(payload = {}) {
+  if (process.platform !== 'win32') {
+    wallpaperState = { ...wallpaperState, ...payload, enabled: false };
+    console.warn('Wallpaper mode is only available on Windows WorkerW desktop.');
+    return null;
+  }
   wallpaperState = { ...wallpaperState, ...payload, enabled: true };
   if (wallpaperWindow && !wallpaperWindow.isDestroyed()) {
     positionWallpaperWindow();
@@ -1178,6 +1201,10 @@ ipcMain.handle('qq-music-clear-login', async () => {
 
 ipcMain.handle('mineradio-open-update-installer', async (_event, filePath) => {
   try {
+    if (process.platform === 'darwin') {
+      shell.openExternal('https://github.com/XxHuberrr/Mineradio/releases').catch(() => {});
+      return { ok: false, platform: 'darwin', error: 'MAC_UPDATE_INSTALLER_UNSUPPORTED' };
+    }
     const target = path.resolve(String(filePath || ''));
     const updateDir = path.resolve(getUpdateDownloadDir());
     if (!target || !target.startsWith(updateDir + path.sep)) {
@@ -1291,6 +1318,10 @@ ipcMain.handle('mineradio-desktop-lyrics-move-by', async (_event, dx, dy) => {
 
 ipcMain.handle('mineradio-wallpaper-set-enabled', async (_event, enabled, payload) => {
   try {
+    if (enabled && process.platform !== 'win32') {
+      closeWallpaperWindow();
+      return { ok: false, platform: process.platform, error: 'WALLPAPER_UNSUPPORTED_ON_THIS_PLATFORM' };
+    }
     if (enabled) createWallpaperWindow(payload || {});
     else closeWallpaperWindow();
     return { ok: true };
@@ -1301,6 +1332,10 @@ ipcMain.handle('mineradio-wallpaper-set-enabled', async (_event, enabled, payloa
 
 ipcMain.handle('mineradio-wallpaper-update', async (_event, payload) => {
   try {
+    if ((payload && payload.enabled) && process.platform !== 'win32') {
+      closeWallpaperWindow();
+      return { ok: false, platform: process.platform, error: 'WALLPAPER_UNSUPPORTED_ON_THIS_PLATFORM' };
+    }
     wallpaperState = { ...wallpaperState, ...(payload || {}) };
     if (wallpaperState.enabled) {
       createWallpaperWindow(wallpaperState);
@@ -1328,6 +1363,7 @@ async function createWindow() {
   process.env.COOKIE_FILE = path.join(app.getPath('userData'), '.cookie');
   process.env.QQ_COOKIE_FILE = path.join(app.getPath('userData'), '.qq-cookie');
   process.env.MINERADIO_UPDATE_DIR = getUpdateDownloadDir();
+  process.env.MINERADIO_BEAT_CACHE_DIR = path.join(app.getPath('userData'), 'beatmaps');
   try {
     const legacyQQCookie = path.join(__dirname, '..', '.qq-cookie');
     if (fs.existsSync(legacyQQCookie)) {
@@ -1350,14 +1386,20 @@ async function createWindow() {
     minWidth: 960,
     minHeight: 540,
     show: false,
-    frame: false,
+    frame: IS_MAC ? true : false,
     fullscreen: false,
     transparent: true,
     backgroundColor: '#00000000',
     hasShadow: true,
     autoHideMenuBar: true,
     title: APP_NAME,
-    icon: APP_ICON_ICO,
+    icon: APP_ICON,
+    ...(IS_MAC ? {
+      titleBarStyle: 'hiddenInset',
+      trafficLightPosition: { x: 18, y: 16 },
+      vibrancy: 'under-window',
+      visualEffectState: 'active',
+    } : {}),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,

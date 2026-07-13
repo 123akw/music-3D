@@ -12,6 +12,9 @@
 <script>
 try {
   document.documentElement.classList.add(localStorage.getItem('mineradio-diy-player-mode-v1') === '1' ? 'diy-mode-preload' : 'simple-mode-preload');
+  if (/Mac|iPhone|iPad|iPod/i.test(navigator.platform || navigator.userAgent || '')) {
+    document.documentElement.classList.add('platform-mac');
+  }
 } catch (e) {
   document.documentElement.classList.add('simple-mode-preload');
 }
@@ -1840,9 +1843,163 @@ html.control-glass-svg-ok #visual-guide-btn:hover{
   .fx-slider{grid-template-columns:74px minmax(0,1fr) 40px 28px;gap:8px;padding:8px}
   .lyric-color-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
+
+/* ============================================================ */
+/*  macOS shell and responsive layout                            */
+/* ============================================================ */
+html.platform-mac,html.platform-mac body{background:transparent}
+body.platform-mac #top-right{right:max(14px,env(safe-area-inset-right));max-width:calc(100vw - 28px);min-width:0}
+body.platform-mac #user-btn{max-width:min(360px,calc(100vw - 110px));min-width:0;overflow:hidden}
+body.platform-mac #user-btn.logged-in span:not(.login-word){min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.platform-mac #user-btn.multi-account{max-width:min(460px,calc(100vw - 96px));flex-direction:row;align-items:center;gap:6px}
+body.platform-mac .top-account-pill{max-width:min(210px,calc((100vw - 118px) / 2));min-width:0}
+body.platform-mac .top-account-name{min-width:0;max-width:112px}
+body.platform-mac #search-area{max-width:calc(100vw - 28px)}
+body.platform-mac #search-stack{max-width:100%}
+body.platform-mac #search-area.stage-mode #search-stack{width:min(360px,calc(100vw - 28px))}
+body.platform-mac #playlist-panel,
+body.platform-mac #fx-panel{max-width:calc(100vw - 24px)}
+body.platform-mac.desktop-shell #desktop-window-shell{display:block;position:fixed;inset:0;overflow:hidden;border-radius:0!important;clip-path:none!important;box-shadow:none!important;background:transparent}
+body.platform-mac.desktop-shell #desktop-titlebar{height:56px;padding:0 max(14px,env(safe-area-inset-right)) 0 max(92px,calc(env(safe-area-inset-left) + 92px));background:linear-gradient(180deg,rgba(0,0,0,.18),rgba(0,0,0,0));pointer-events:none}
+body.platform-mac.desktop-shell #desktop-titlebar .desktop-drag-region{pointer-events:auto}
+body.platform-mac.desktop-shell .desktop-window-controls{gap:8px;max-width:calc(100vw - 126px);overflow:hidden}
+body.platform-mac.desktop-shell .desktop-window-btn{display:none!important}
+body.platform-mac.desktop-shell .desktop-mode-btn{height:30px;min-width:58px;padding:0 10px;border-radius:10px;font-size:10.5px;letter-spacing:.04em;background:rgba(18,20,24,.36)}
+body.platform-mac.desktop-shell #desktop-titlebar #visual-guide-btn,
+body.platform-mac.desktop-shell #desktop-titlebar #update-entry{width:30px;height:30px;border-radius:10px;background:rgba(18,20,24,.34)}
+body.platform-mac.desktop-shell #top-right{top:max(58px,calc(env(safe-area-inset-top) + 58px));right:max(18px,calc(env(safe-area-inset-right) + 18px));max-width:min(520px,calc(100vw - 126px));min-width:0}
+body.platform-mac.desktop-shell #top-right .icon-btn{flex:0 0 auto}
+body.platform-mac.desktop-shell #user-btn{max-width:min(390px,calc(100vw - 210px));min-width:0;overflow:hidden}
+body.platform-mac.desktop-shell #user-btn.logged-in{padding-right:12px}
+body.platform-mac.desktop-shell #user-btn.multi-account{flex-direction:row;align-items:center;gap:6px;max-width:min(470px,calc(100vw - 190px))}
+body.platform-mac.desktop-shell .top-account-pill{max-width:min(220px,calc((100vw - 230px) / 2));height:38px;padding-right:10px;border-radius:19px;gap:7px}
+body.platform-mac.desktop-shell .top-account-pill img,
+body.platform-mac.desktop-shell #user-avatar{width:30px;height:30px}
+body.platform-mac.desktop-shell .top-account-name{min-width:0;max-width:120px;font-size:11.5px}
+body.platform-mac.desktop-shell .top-account-vip,
+body.platform-mac.desktop-shell #user-vip-tag{display:none}
+body.platform-mac.desktop-shell #search-area{max-width:calc(100vw - 132px)}
+body.platform-mac.desktop-shell #search-area.peek{top:max(60px,calc(env(safe-area-inset-top) + 60px))}
+body.platform-mac.desktop-shell #search-area.stage-mode.peek{top:max(58px,calc(env(safe-area-inset-top) + 58px))}
+body.platform-mac.desktop-shell #search-area.stage-mode #search-stack{width:min(360px,calc(100vw - 160px))}
+body.platform-mac.desktop-shell #trial-banner,
+body.platform-mac.desktop-shell #ai-depth-chip{top:max(112px,calc(env(safe-area-inset-top) + 112px))}
+body.platform-mac.desktop-shell #beat-chip{top:max(154px,calc(env(safe-area-inset-top) + 154px))}
+body.platform-mac.desktop-shell #toast{top:max(62px,calc(env(safe-area-inset-top) + 62px));max-width:calc(100vw - 48px)}
+body.platform-mac.desktop-shell #empty-home{top:max(118px,calc(env(safe-area-inset-top) + 118px));bottom:max(44px,env(safe-area-inset-bottom));width:calc(100vw - 40px)}
+body.platform-mac.desktop-shell #playlist-panel{top:max(82px,calc(env(safe-area-inset-top) + 82px));left:-410px;max-height:calc(100dvh - 132px)}
+body.platform-mac.desktop-shell #playlist-panel.show,
+body.platform-mac.desktop-shell #playlist-panel.peek{left:max(20px,env(safe-area-inset-left))}
+body.platform-mac.desktop-shell #fx-panel{right:-460px;max-height:calc(100dvh - 148px)}
+body.platform-mac.desktop-shell #fx-panel.show,
+body.platform-mac.desktop-shell #fx-panel.peek{right:max(20px,env(safe-area-inset-right))}
+body.platform-mac.desktop-shell.diy-mode #fx-panel{top:max(64px,calc(env(safe-area-inset-top) + 64px));bottom:max(118px,calc(env(safe-area-inset-bottom) + 118px))}
+body.platform-mac.desktop-shell.diy-mode #bottom-bar,
+body.platform-mac.desktop-shell.diy-mode #bottom-bar.stage-mode{width:min(1080px,calc(100vw - 56px))}
+body.platform-mac .modal-mask{padding:max(18px,env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left));align-items:center;justify-content:center}
+body.platform-mac .modal{width:min(440px,calc(100vw - 36px));max-width:calc(100vw - 36px);max-height:calc(100dvh - 48px);overflow:auto;overscroll-behavior:contain;padding:28px;border-radius:20px}
+body.platform-mac .dual-login-modal,
+body.platform-mac .dual-user-modal{width:min(520px,calc(100vw - 36px));max-width:calc(100vw - 36px)}
+body.platform-mac .track-detail-modal{width:min(720px,calc(100vw - 36px));max-height:calc(100dvh - 48px)}
+body.platform-mac .modal.update-modal{width:min(430px,calc(100vw - 36px));max-width:calc(100vw - 36px)}
+body.platform-mac .btn-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+body.platform-mac .modal-btn{min-width:0;white-space:nowrap}
+body.platform-mac .qr-shell{width:clamp(148px,28vw,200px);height:clamp(148px,28vw,200px)}
+body.platform-mac #qr-img{width:100%;height:100%;padding:9px}
+body.platform-mac .qq-cookie-input{max-height:120px;min-height:74px;overflow:auto}
+
+@media (max-width:1180px){
+  body.platform-mac.desktop-shell #top-right{max-width:min(430px,calc(100vw - 126px))}
+  body.platform-mac.desktop-shell #user-btn{max-width:min(320px,calc(100vw - 198px))}
+  body.platform-mac.desktop-shell .top-account-pill{max-width:min(182px,calc((100vw - 220px) / 2))}
+  body.platform-mac.desktop-shell .top-account-name{max-width:92px}
+}
+@media (max-width:900px){
+  body.platform-mac.desktop-shell #desktop-titlebar{padding-left:max(86px,calc(env(safe-area-inset-left) + 86px))}
+  body.platform-mac.desktop-shell #top-right{top:max(60px,calc(env(safe-area-inset-top) + 60px));right:14px;max-width:calc(100vw - 112px)}
+  body.platform-mac.desktop-shell #home-btn{display:none}
+  body.platform-mac.desktop-shell #user-btn{max-width:calc(100vw - 132px)}
+  body.platform-mac.desktop-shell .top-account-pill{max-width:min(150px,calc((100vw - 132px) / 2))}
+  body.platform-mac.desktop-shell #search-area.peek{top:max(108px,calc(env(safe-area-inset-top) + 108px))}
+  body.platform-mac.desktop-shell #search-area.stage-mode.peek{top:max(104px,calc(env(safe-area-inset-top) + 104px))}
+  body.platform-mac.desktop-shell #search-stack{width:min(440px,calc(100vw - 32px))}
+  body.platform-mac.desktop-shell #search-box{height:50px;border-radius:18px;padding:0 15px}
+  body.platform-mac.desktop-shell #playlist-panel{width:min(340px,calc(100vw - 28px))}
+  body.platform-mac.desktop-shell #fx-panel{width:min(410px,calc(100vw - 28px))}
+}
+@media (max-width:720px){
+  body.platform-mac #top-right{right:10px;max-width:calc(100vw - 20px)}
+  body.platform-mac #home-btn{display:none}
+  body.platform-mac #user-btn{max-width:calc(100vw - 28px);height:38px}
+  body.platform-mac #user-btn.multi-account{max-width:calc(100vw - 28px)}
+  body.platform-mac .top-account-pill{height:34px;max-width:76px;padding:0 4px;border-radius:17px}
+  body.platform-mac .top-account-pill img{width:28px;height:28px}
+  body.platform-mac .top-account-name{display:none}
+  body.platform-mac .top-account-vip{display:none}
+  body.platform-mac #search-area{left:12px;right:12px;transform:none;width:auto;max-width:none}
+  body.platform-mac #search-stack,
+  body.platform-mac #search-area.stage-mode #search-stack{width:100%}
+  body.platform-mac #upload-actions{display:none}
+  body.platform-mac #playlist-panel,
+  body.platform-mac #fx-panel{left:12px!important;right:12px!important;width:auto!important;max-width:none;top:auto!important;bottom:max(104px,calc(env(safe-area-inset-bottom) + 104px));max-height:min(58dvh,420px);border-radius:18px;transform:translateY(18px)}
+  body.platform-mac #playlist-panel.show,
+  body.platform-mac #playlist-panel.peek,
+  body.platform-mac #fx-panel.show,
+  body.platform-mac #fx-panel.peek{transform:translateY(0)}
+  body.platform-mac.desktop-shell #desktop-titlebar{height:52px;padding-left:82px;padding-right:10px}
+  body.platform-mac.desktop-shell .desktop-window-controls{gap:6px}
+  body.platform-mac.desktop-shell #desktop-titlebar #visual-guide-btn,
+  body.platform-mac.desktop-shell #desktop-titlebar #update-entry{display:none!important}
+  body.platform-mac.desktop-shell .desktop-mode-btn{min-width:50px;padding:0 8px}
+  body.platform-mac.desktop-shell #top-right{top:58px;right:10px;max-width:calc(100vw - 100px)}
+  body.platform-mac.desktop-shell #user-btn{height:38px;max-width:calc(100vw - 116px);padding-left:4px;padding-right:10px}
+  body.platform-mac.desktop-shell #user-btn.multi-account{max-width:calc(100vw - 104px)}
+  body.platform-mac.desktop-shell .top-account-pill{height:34px;max-width:76px;padding:0 4px;border-radius:17px}
+  body.platform-mac.desktop-shell .top-account-name{display:none}
+  body.platform-mac.desktop-shell .top-account-pill img,
+  body.platform-mac.desktop-shell #user-avatar{width:28px;height:28px}
+  body.platform-mac.desktop-shell #search-area{left:12px;right:12px;transform:none;max-width:none;width:auto}
+  body.platform-mac.desktop-shell #search-area.peek{top:104px}
+  body.platform-mac.desktop-shell #search-stack,
+  body.platform-mac.desktop-shell #search-area.stage-mode #search-stack{width:100%}
+  body.platform-mac.desktop-shell #upload-actions{display:none}
+  body.platform-mac.desktop-shell #playlist-panel,
+  body.platform-mac.desktop-shell #fx-panel{left:12px!important;right:12px!important;width:auto!important;top:auto!important;bottom:max(104px,calc(env(safe-area-inset-bottom) + 104px));max-height:min(58dvh,420px);border-radius:18px;transform:translateY(18px)}
+  body.platform-mac.desktop-shell #playlist-panel.show,
+  body.platform-mac.desktop-shell #playlist-panel.peek,
+  body.platform-mac.desktop-shell #fx-panel.show,
+  body.platform-mac.desktop-shell #fx-panel.peek{transform:translateY(0)}
+  body.platform-mac.desktop-shell #bottom-bar,
+  body.platform-mac.desktop-shell #bottom-bar.stage-mode,
+  body.platform-mac.desktop-shell.diy-mode #bottom-bar,
+  body.platform-mac.desktop-shell.diy-mode #bottom-bar.stage-mode{width:calc(100vw - 20px)}
+  body.platform-mac .modal{padding:22px;width:calc(100vw - 24px);max-width:calc(100vw - 24px);max-height:calc(100dvh - 28px)}
+  body.platform-mac .login-intro{padding:12px;margin-bottom:12px}
+}
+@media (max-width:560px){
+  body.platform-mac.desktop-shell #top-right{max-width:calc(100vw - 92px)}
+  body.platform-mac.desktop-shell #user-btn.logged-in span:not(.login-word){max-width:86px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  body.platform-mac.desktop-shell #search-area.peek{top:100px}
+  body.platform-mac.desktop-shell #controls{grid-template-columns:1fr}
+  body.platform-mac.desktop-shell .control-cluster.actions{display:none}
+  body.platform-mac.desktop-shell .control-cluster.modes{display:none}
+  body.platform-mac.desktop-shell .control-track{max-width:100%;justify-content:center}
+  body.platform-mac .login-platform-tabs,
+  body.platform-mac .user-platform-tabs{gap:5px}
+  body.platform-mac .login-platform-tabs button,
+  body.platform-mac .user-platform-tabs button{height:30px;font-size:10.5px}
+  body.platform-mac .qr-shell{width:148px;height:148px}
+  body.platform-mac .btn-row .modal-btn{flex:1 1 calc(50% - 8px);padding-left:10px;padding-right:10px}
+  body.platform-mac #refresh-qr-btn{flex-basis:100%}
+}
 </style>
 </head>
 <body>
+<script>
+try {
+  if (document.documentElement.classList.contains('platform-mac')) document.body.classList.add('platform-mac');
+} catch (e) {}
+</script>
 <div id="desktop-window-shell">
 <div id="desktop-titlebar" aria-label="window controls">
   <div class="desktop-drag-region">
@@ -18486,7 +18643,11 @@ async function playQueueAt(idx, opts) {
     }
     if (data.trial) {
       var txt;
-      if (data.loggedIn && data.vipLevel === 'svip') txt = '此歌曲需要单曲、专辑购买或更高权限';
+      if (isQQPlayback) {
+        if (data.loggedIn && data.playbackKeyReady) txt = 'QQ 音乐仅返回试听片段，可能需要单曲购买或官方客户端权限';
+        else if (data.loggedIn) txt = 'QQ 音乐播放授权不完整 · 当前仅播放试听片段';
+        else txt = '当前未登录 QQ 音乐 · 仅播放试听片段';
+      } else if (data.loggedIn && data.vipLevel === 'svip') txt = '此歌曲需要单曲、专辑购买或更高权限';
       else if (data.loggedIn && data.vipLevel === 'vip') txt = '此歌曲需要 SVIP 或购买 · 当前仅播放试听片段';
       else if (data.loggedIn) txt = '此歌曲需 VIP · 当前仅播放试听片段';
       else txt = '当前未登录 · 仅播放试听片段';
@@ -18494,7 +18655,7 @@ async function playQueueAt(idx, opts) {
       var trialLoginBtn = document.getElementById('trial-login-btn');
       if (trialLoginBtn) {
         trialLoginBtn.style.display = data.loggedIn ? 'none' : '';
-        trialLoginBtn.onclick = function(){ openProviderLogin('netease'); };
+        trialLoginBtn.onclick = function(){ openProviderLogin(isQQPlayback ? 'qq' : 'netease'); };
       }
       document.getElementById('trial-banner').classList.add('show');
     }
@@ -23723,9 +23884,9 @@ function updateUserModalUi() {
       vipEl.textContent = 'UID: ' + ((st && st.userId) || '-') + '  ·  ' + vipLabel;
       vipEl.style.color = hasProviderVip('netease', st) ? 'rgba(244,210,138,0.86)' : 'rgba(255,255,255,0.5)';
     } else {
-      var qqVipLabel = hasProviderVip('qq', st) ? 'QQ VIP 会员' : 'QQ 音乐会话';
+      var qqVipLabel = hasProviderVip('qq', st) ? 'QQ VIP 会员' : (st && st.playbackKeyReady ? 'QQ 播放已授权' : 'QQ 音乐会话');
       vipEl.textContent = 'UID: ' + ((st && st.userId) || '-') + '  ·  ' + qqVipLabel;
-      vipEl.style.color = hasProviderVip('qq', st) ? 'rgba(0,245,212,0.82)' : 'rgba(0,245,212,0.58)';
+      vipEl.style.color = (hasProviderVip('qq', st) || (st && st.playbackKeyReady)) ? 'rgba(0,245,212,0.82)' : 'rgba(0,245,212,0.58)';
     }
   }
   ['netease','qq','both'].forEach(function(key){
